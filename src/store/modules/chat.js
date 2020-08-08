@@ -3,10 +3,10 @@
 // initial state
 const state = () => ({
   users: {"https://spoggy-test3.solid.community/profile/card#me": {pic:"boo"}},
-  //  root: "",
+  root: "",
   //  dataDate: "",
   //  path: "",
-    fileUrl: "",
+  fileUrl: "",
   //  requests: [],
   //  messages: []
 })
@@ -31,13 +31,13 @@ const mutations = {
     state.users[webId]= pic
   },
   setFileUrl(state, fileUrl){
-  state.fileUrl = fileUrl
-  }
-  /*  setRoot (state, root) {
-  state.root = root
-},
-setPath(state, path){
-state.path = path
+    state.fileUrl = fileUrl
+  },
+  setRoot (state, root) {
+    state.root = root
+  },/*
+  setPath(state, path){
+  state.path = path
 },
 setMessages(state,messages){
 state.messages = messages

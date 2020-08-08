@@ -1,43 +1,45 @@
 <template>
   <div class="message-list">
-<!--
+    <!--
     <b-input-group prepend="Solid Chat url" class="mt-3">
-      <b-form-input ref="new_url" placeholder="https://solidarity.inrupt.net/public/Solidarity" vamue="https://solidarity.inrupt.net/public/Solidarity"></b-form-input>
-      <b-input-group-append>
+    <b-form-input ref="new_url" placeholder="https://solidarity.inrupt.net/public/Solidarity" vamue="https://solidarity.inrupt.net/public/Solidarity"></b-form-input>
+    <b-input-group-append>
 
-        <b-button variant="info" @click="change">Change</b-button>
-      </b-input-group-append>
-    </b-input-group>-->
+    <b-button variant="info" @click="change">Change</b-button>
+  </b-input-group-append>
+</b-input-group>-->
+<div>
+  <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="300" >
 
-    <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="600">
 
-
-      <b-list-group>
-        <b-list-group-item v-for="m in data" :key="m.id">
-          <div class="row card-header small">
-            <div class="col">
-              {{m.maker.split('/').slice(2,3)[0]}}
-            </div>
-            <div class="col-8">
-            </div>
-
-            <div class="col">
-              {{m.created}}
-            </div>
+    <b-list-group>
+      <b-list-group-item v-for="m in data" :key="m.id">
+        <div class="row card-header small">
+          <div class="col">
+            {{m.maker.split('/').slice(2,3)[0]}}
           </div>
-          <div class="row">
-            {{m.content}}
-          </div>
-          <div class="row">
-            {{m.id.split("#")[1]}}
-          </div>
-        </b-list-group-item>
 
-      </b-list-group>
-    </div>
-    <SolidChatSend />
+          <div class="col-2">
+            {{m.created}}
+          </div>
+        </div>
+        <div class="row ml-4 mr-4">
+          {{m.content}}
+        </div>
+      <!--  <div class="row">
+          {{m.id.split("#")[1]}}
+        </div>-->
+      </b-list-group-item>
+
+    </b-list-group>
+
 
   </div>
+
+</div>
+<SolidChatSend />
+</div>
+
 </template>
 
 <script>
@@ -67,17 +69,19 @@ export default {
       //  data :[],
       today_messages: [],
       old_messages: [],
-      root :"https://solidarity.inrupt.net/public/Solidarity",// "https://solidarity.inrupt.net/public/Solidarity",
+      root :"https://solidarity.inrupt.net/public/ChatTest",// "https://solidarity.inrupt.net/public/Solidarity",
       //  mainProps: {  }
       //  mainProps: { blank: true, blankColor: '#777', width: 75, height: 75, class: 'm1' }
     }
   },
   created(){
+    this.root.endsWith('/') ? this.root = this.root.slice(0, -1) : ""
     this.limite =  new Date("01/20/2020")
     this.today = new Date()
     this.date = this.today
     this.fileUrl =  [this.root, this.date.getFullYear(), ("0" + (this.date.getMonth() + 1)).slice(-2), ("0" + this.date.getDate()).slice(-2), "chat.ttl"].join("/")
     this.$store.commit('chat/setFileUrl', this.fileUrl)
+    this.$store.commit('chat/setRoot', this.root)
     let withoutProtocol = this.root.split('//')[1]
     let sock = withoutProtocol.split('/')[0]+"/"
     let socket = new WebSocket('wss://'+sock, ['solid.0.1.0']);
@@ -99,12 +103,12 @@ export default {
     },
     loadMore: function() {
       this.busy = true;
-      console.log("Load")
+      //  console.log("Load")
       if (this.limite <= this.date ){
         //  let date =  this.date
-        console.log(this.date)
+        //  console.log(this.date)
         let path = [this.root, this.date.getFullYear(), ("0" + (this.date.getMonth() + 1)).slice(-2), ("0" + this.date.getDate()).slice(-2), "chat.ttl"].join("/")
-        console.log(path)
+        //console.log(path)
 
         //  let messages = this.read(path)
         //this.data = this.data.concat(messages);
@@ -121,7 +125,7 @@ export default {
 
     },
     async updateMessages(url, sens){
-      console.log(url, sens)
+      //    console.log(url, sens)
       try{
         const chatDoc = await fetchDocument(url);
         let  subjects = chatDoc.findSubjects();
@@ -129,9 +133,11 @@ export default {
         //  console.log(subjects)
         //let triples = []
         let messages = []
+        var existingIds = this.data.map((obj) => obj.id);
+        //    console.log(existingIds)
         for  (let s of subjects) {
           //    console.log("Compare",s.asRef(), this.root+"/index.ttl#this")
-          if (s.asRef() != this.root+"/index.ttl#this"){
+          if (s.asRef() != this.root+"/index.ttl#this" && ! existingIds.includes(s.asRef())){
             //  console.log(s)
             //  let t = s.getTriples()
             let created = s.getString(dct.created)
@@ -155,25 +161,29 @@ export default {
 
 
         }
-        console.log("m",messages)
+        //  console.log("m",messages)
         if (sens == "top"){
           this.today_messages = []
           this.today_messages = messages
-          console.log(this.today_messages)
+          //  console.log("TODAY",this.today_messages)
         }else{
-          this.old_messages = this.old_messages.concat(messages)
-          console.log(this.old_messages)
+          this.old_messages.push.apply(this.old_messages, messages)
+          //  console.log("OLD",this.old_messages)
         }
+        //console.log("TODAY",this.today_messages)
+        //console.log("OLD",this.old_messages)
         this.data = []
         this.data = this.today_messages.concat(this.old_messages)
-        console.log(this.data)
+        //console.log("TODAY",this.today_messages)
+        //console.log("OLD",this.old_messages)
+        //console.log("DATA",this.data)
         //console.log("USERS",this.$store.state.chat.users)
 
         //  console.log(triples)
         //  messages = triples.reverse()
       }catch(e){
         //  console.log(e)
-
+        this.loadMore()
       }
     },
     onlyUnique(value, index, self) {

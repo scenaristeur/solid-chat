@@ -20,11 +20,14 @@
 <script>
 import store from "@/store";
 import { fetchDocument } from 'tripledoc';
-import { sioc, dct, foaf } from 'rdf-namespaces' //namedNode
+import { sioc, dct, foaf } from 'rdf-namespaces' //
+const { namedNode } = require('@rdfjs/data-model');
 import SolidLogin from '@/components/SolidLogin.vue'
 import auth from 'solid-auth-client';
 let SolidFileClient = window.SolidFileClient
 console.log("SFC", SolidFileClient)
+let solid = window.solid
+console.log("SOLID",solid)
 
 
 export default {
@@ -38,8 +41,17 @@ export default {
       message: "",
     }
   },
-  created(){
+  async created(){
     this.fc = new SolidFileClient(auth)
+    if( !await this.fc.itemExists( this.fileUrl )) {
+      await this.fc.postFile(this.fileUrl, "", "text/turtle")
+      .then((content) => {
+        console.log("File Created",content)
+      })
+      .catch(err => console.error(`Error: ${err}`))
+    }else{
+      console.log("File exist",this.fileUrl)
+    }
   },
   async mounted(){
 
@@ -71,6 +83,7 @@ export default {
       // please refer to https://github.com/scenaristeur/shighl/blob/9b4b61d06d8a20f55de3f2aa580cbc5fb840d584/src/Shighl-chat.js#L214
       // and https://github.com/LDflex/LDflex/issues/53
       let webId= this.$store.state.solid.webId
+      let root= this.$store.state.chat.root
 
       console.log(this.fileUrl)
       if (this.message.length > 0 && webId != null)    {
@@ -91,7 +104,25 @@ export default {
         subj.addLiteral(sioc.content, this.message)
         subj.addLiteral(dct.created, date)
         subj.addNodeRef(foaf.maker, webId)
+
         await chatDoc.save();
+
+        let index = root+"/index.ttl#this"
+        console.log(index)
+        let messUri = this.fileUrl+"#"+messageId
+        console.log(messUri)
+        await solid.data.from(this.fileUrl)[index]['http://www.w3.org/2005/01/wf/flow#message'].set(namedNode(messUri))
+        //    console.log(namedNode)
+        //          await solid.data.from(this.fileUrl)[index]['http://www.w3.org/2005/01/wf/flow#message'].set(namedNode(subj.asRef()))
+
+        /*
+        const chatDoc2 = await fetchDocument(this.fileUrl);
+        let index =   chatDoc2.addSubject({identifier:this.root+"/index.ttl"})
+        console.log(await index.getTriples())
+        console.log(await index.getRef())
+        index.addNodeRef('http://www.w3.org/2005/01/wf/flow#message', subj)
+        //https://solidarity.inrupt.net/public/ChatTest/index.ttl#this
+        await chatDoc2.save();*/
 
         this.message=""
       }else{
