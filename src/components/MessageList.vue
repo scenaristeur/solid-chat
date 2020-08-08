@@ -1,0 +1,184 @@
+<template>
+  <div class="message-list">
+<!--
+    <b-input-group prepend="Solid Chat url" class="mt-3">
+      <b-form-input ref="new_url" placeholder="https://solidarity.inrupt.net/public/Solidarity" vamue="https://solidarity.inrupt.net/public/Solidarity"></b-form-input>
+      <b-input-group-append>
+
+        <b-button variant="info" @click="change">Change</b-button>
+      </b-input-group-append>
+    </b-input-group>-->
+
+    <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="600">
+
+
+      <b-list-group>
+        <b-list-group-item v-for="m in data" :key="m.id">
+          <div class="row card-header small">
+            <div class="col">
+              {{m.maker.split('/').slice(2,3)[0]}}
+            </div>
+            <div class="col-8">
+            </div>
+
+            <div class="col">
+              {{m.created}}
+            </div>
+          </div>
+          <div class="row">
+            {{m.content}}
+          </div>
+          <div class="row">
+            {{m.id.split("#")[1]}}
+          </div>
+        </b-list-group-item>
+
+      </b-list-group>
+    </div>
+    <SolidChatSend />
+
+  </div>
+</template>
+
+<script>
+import store from "@/store";
+import { fetchDocument } from 'tripledoc';
+import { sioc, dct, foaf } from 'rdf-namespaces'
+import SolidChatSend from '@/components/SolidChatSend'
+//import ChatScroller from '@/components/ChatScroller'
+import infiniteScroll from 'vue-infinite-scroll'
+
+
+
+export default {
+  store,
+  name: 'MessageList',
+  components: {
+    SolidChatSend,
+    //  ChatScroller
+  },
+  directives: {infiniteScroll},
+  data: function () {
+    return {
+      data: [],
+      busy: false,
+      date: {},
+      limite : {},
+      //  data :[],
+      today_messages: [],
+      old_messages: [],
+      root :"https://solidarity.inrupt.net/public/Solidarity",// "https://solidarity.inrupt.net/public/Solidarity",
+      //  mainProps: {  }
+      //  mainProps: { blank: true, blankColor: '#777', width: 75, height: 75, class: 'm1' }
+    }
+  },
+  created(){
+    this.limite =  new Date("01/20/2020")
+    this.today = new Date()
+    this.date = this.today
+    this.fileUrl =  [this.root, this.date.getFullYear(), ("0" + (this.date.getMonth() + 1)).slice(-2), ("0" + this.date.getDate()).slice(-2), "chat.ttl"].join("/")
+    this.$store.commit('chat/setFileUrl', this.fileUrl)
+    let withoutProtocol = this.root.split('//')[1]
+    let sock = withoutProtocol.split('/')[0]+"/"
+    let socket = new WebSocket('wss://'+sock, ['solid.0.1.0']);
+    socket.onopen = function() {
+      socket.send('sub '+this.fileUrl);
+    }.bind(this)
+    socket.onmessage = function(msg) {
+      if (msg.data && msg.data.slice(0, 3) === 'pub') {
+        // resource updated, refetch resource
+        this.updateMessages(msg.data.substring(4), "top")
+      }
+    }.bind(this)
+    //  this.updateMessages(this.fileUrl, "botto")
+    this.loadMore()
+  },
+  methods: {
+    change: function(){
+      this.root = this.$refs.new_url.value
+    },
+    loadMore: function() {
+      this.busy = true;
+      console.log("Load")
+      if (this.limite <= this.date ){
+        //  let date =  this.date
+        console.log(this.date)
+        let path = [this.root, this.date.getFullYear(), ("0" + (this.date.getMonth() + 1)).slice(-2), ("0" + this.date.getDate()).slice(-2), "chat.ttl"].join("/")
+        console.log(path)
+
+        //  let messages = this.read(path)
+        //this.data = this.data.concat(messages);
+        this.updateMessages(path, "bottom")
+
+        //  this.data.push({ name: count++ , date:date});
+        this.date.setDate(this.date.getDate() -1)
+
+      }else{
+        //console.log("over", this.limite)
+        alert ("No message before "+this.limite)
+      }
+      this.busy = false;
+
+    },
+    async updateMessages(url, sens){
+      console.log(url, sens)
+      try{
+        const chatDoc = await fetchDocument(url);
+        let  subjects = chatDoc.findSubjects();
+        subjects = subjects.filter( this.onlyUnique )
+        //  console.log(subjects)
+        //let triples = []
+        let messages = []
+        for  (let s of subjects) {
+          //    console.log("Compare",s.asRef(), this.root+"/index.ttl#this")
+          if (s.asRef() != this.root+"/index.ttl#this"){
+            //  console.log(s)
+            //  let t = s.getTriples()
+            let created = s.getString(dct.created)
+            let content = s.getLiteral(sioc.content)
+            let maker = s.getNodeRef(foaf.maker)
+
+            let t={id:s.asRef(),
+              created: new Date(created).toLocaleString(),
+              content: content,
+              maker: maker,
+              //  pic: `${p}`
+              //  parts: parts,
+              //  parent: parent
+            }
+
+            //  console.log(t)
+            //  triples.push(t)
+            messages.unshift(t)
+
+          }
+
+
+        }
+        console.log("m",messages)
+        if (sens == "top"){
+          this.today_messages = []
+          this.today_messages = messages
+          console.log(this.today_messages)
+        }else{
+          this.old_messages = this.old_messages.concat(messages)
+          console.log(this.old_messages)
+        }
+        this.data = []
+        this.data = this.today_messages.concat(this.old_messages)
+        console.log(this.data)
+        //console.log("USERS",this.$store.state.chat.users)
+
+        //  console.log(triples)
+        //  messages = triples.reverse()
+      }catch(e){
+        //  console.log(e)
+
+      }
+    },
+    onlyUnique(value, index, self) {
+      return self.indexOf(value) === index;
+    },
+  }
+}
+</script>
