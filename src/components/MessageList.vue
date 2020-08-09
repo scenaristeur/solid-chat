@@ -14,7 +14,7 @@
 
     <b-list-group>
       <b-list-group-item v-for="m in data" :key="m.id">
-        <div class="row card-header small">
+        <div class="row card-header small m-0">
           <div class="col">
             {{m.maker.split('/').slice(2,3)[0]}}
           </div>
@@ -23,7 +23,7 @@
             {{m.created}}
           </div>
         </div>
-        <div class="row ml-4 mr-4">
+        <div class="row m-4">
           {{m.content}}
         </div>
       <!--  <div class="row">
@@ -69,7 +69,7 @@ export default {
       //  data :[],
       today_messages: [],
       old_messages: [],
-      root :"https://solidarity.inrupt.net/public/ChatTest",// "https://solidarity.inrupt.net/public/Solidarity",
+      root :"https://solidarity.inrupt.net/public/Solidarity/",// "https://solidarity.inrupt.net/public/Solidarity", ChatTest
       //  mainProps: {  }
       //  mainProps: { blank: true, blankColor: '#777', width: 75, height: 75, class: 'm1' }
     }

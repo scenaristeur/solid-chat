@@ -65,6 +65,9 @@ export default {
     }
   },
   watch:{
+    webId(webId){
+      console.log("Webid",webId)
+    },
     async  fileUrl(){
       if( !await this.fc.itemExists( this.fileUrl )) {
         await this.fc.postFile(this.fileUrl, "", "text/turtle")

@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/solid-chat/precache-manifest.bc5703571dc317ecc0867781d9c68fb4.js"
+  "/solid-chat/precache-manifest.c05dd59c1974db1b9e86fa1c28685c4c.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "solid-chat"});

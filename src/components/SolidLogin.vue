@@ -1,8 +1,8 @@
 <template>
-    <div class="solid-login">
-      <b-button variant="success" v-if="webId == null" @click="login">Login</b-button>
-      <b-button variant="danger" v-else @click="logout">Logout</b-button>
-    </div>
+  <div class="solid-login">
+    <b-button variant="success" v-if="webId == null" @click="login">Login</b-button>
+    <b-button variant="danger" v-else @click="logout">Logout</b-button>
+  </div>
 </template>
 
 <script>
@@ -20,7 +20,7 @@ export default {
   },
   components: {
     BButton,
-  //  auth
+    //  auth
   },
   data: function () {
     return {
@@ -30,10 +30,12 @@ export default {
   },
   created(){
     auth.trackSession(async session => {
+      console.log(session)
       if (!session){
         this.webId = null
         console.log('The user is not logged in', this.webId)
         this.$store.commit('solid/setWebId', this.webId)
+        localStorage.removeItem("solid-auth-client");
       } else{
         this.webId = session.webId
         console.log(`The user is ${session.webId}`)
@@ -51,13 +53,14 @@ export default {
     },
     async popupLogin() {
       let session = await auth.currentSession();
-      let popupUri = 'https://solid.community/common/popup.html';
+      let popupUri = './dist-popup/popup.html';
+      //  let popupUri = 'https://solid.community/common/popup.html';
       if (!session){
-      session = await auth.popupLogin({ popupUri });
-    }else{
-      console.log(session)
+        session = await auth.popupLogin({ popupUri });
+      }else{
+        console.log(session)
+      }
     }
-  }
   }
 }
 </script>
