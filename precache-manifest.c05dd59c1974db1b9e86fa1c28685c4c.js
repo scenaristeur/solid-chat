@@ -1,23 +1,39 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "38e0bcd4aeb60ac180cf",
-    "url": "/solid-chat/css/app.3962b65d.css"
+    "revision": "bfdb66c5b302d31f2ac3",
+    "url": "/solid-chat/css/app.83dcf6fc.css"
   },
   {
     "revision": "256f529228e18b332310",
     "url": "/solid-chat/css/chunk-vendors.e33783dd.css"
   },
   {
-    "revision": "d468a08d1fceba1b616978d95504f4eb",
+    "revision": "60a550e83a89ef83040e8ad660fade2b",
+    "url": "/solid-chat/dist-popup/popup-template.html"
+  },
+  {
+    "revision": "7446e23a91934efa9156941824b3d35f",
+    "url": "/solid-chat/dist-popup/popup.html"
+  },
+  {
+    "revision": "b1b1555a1e6a20d43d88f858d222b832",
+    "url": "/solid-chat/dist-popup1/popup-template.html"
+  },
+  {
+    "revision": "7a4b08594a85103b6735977c6a10cfbf",
+    "url": "/solid-chat/dist-popup1/popup.html"
+  },
+  {
+    "revision": "24032b443e3788d94e9dd766e483fb55",
     "url": "/solid-chat/index.html"
   },
   {
-    "revision": "0fca5a5891285e7d337e",
-    "url": "/solid-chat/js/about.3c39dbab.js"
+    "revision": "117b86a4b94899046446",
+    "url": "/solid-chat/js/about.980dfdbe.js"
   },
   {
-    "revision": "38e0bcd4aeb60ac180cf",
-    "url": "/solid-chat/js/app.2257e7ad.js"
+    "revision": "bfdb66c5b302d31f2ac3",
+    "url": "/solid-chat/js/app.20d510ee.js"
   },
   {
     "revision": "256f529228e18b332310",
